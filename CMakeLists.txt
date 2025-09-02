@@ -1,35 +1,47 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.10)
 project(ocs2_robotic_assets)
 
-find_package(catkin)
+find_package(ament_cmake REQUIRED)
 
-###################################
-## catkin specific configuration ##
-###################################
+# --- Generate a header with the package path (builddir -> install) ---
+# Prefer generating into the build tree (don’t write into source).
+set(GENERATED_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include/${PROJECT_NAME})
+file(MAKE_DIRECTORY ${GENERATED_INCLUDE_DIR})
 
-catkin_package(
-  INCLUDE_DIRS
-    include
+# Expose a variable the template can substitute.
+set(PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/package_path.h.in
+  ${GENERATED_INCLUDE_DIR}/package_path.h
+  @ONLY
 )
 
-###########
-## Build ##
-###########
-
-# Resolve for the package path at compile time.
-configure_file (
-  "${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/package_path.h.in"
-  "${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/package_path.h" @ONLY
+# ------------
+# Installation
+# ------------
+# Install all static headers, but NOT the .in template.
+install(
+  DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION include/${PROJECT_NAME}
+  FILES_MATCHING
+    PATTERN "*.h" PATTERN "*.hpp"
+    PATTERN "package_path.h.in" EXCLUDE
 )
 
-#############
-## Install ##
-#############
-
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+# Install the generated header.
+install(
+  FILES ${GENERATED_INCLUDE_DIR}/package_path.h
+  DESTINATION include/${PROJECT_NAME}
 )
 
-install(DIRECTORY resources
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+# Install data files.
+install(
+  DIRECTORY resources
+  DESTINATION share/${PROJECT_NAME}
 )
+
+# Export includes for downstream users.
+ament_export_include_directories(include)
+
+ament_package()
