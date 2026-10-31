@@ -17,9 +17,19 @@ configure_file(
   @ONLY
 )
 
+# Header-only target so downstream packages can link against ocs2_robotic_assets::ocs2_robotic_assets
+add_library(${PROJECT_NAME} INTERFACE)
+target_include_directories(${PROJECT_NAME} INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
 # ------------
 # Installation
 # ------------
+install(TARGETS ${PROJECT_NAME} EXPORT export_${PROJECT_NAME})
+
 # Install all static headers, but NOT the .in template.
 install(
   DIRECTORY include/${PROJECT_NAME}/
@@ -43,5 +53,6 @@ install(
 
 # Export includes for downstream users.
 ament_export_include_directories(include)
+ament_export_targets(export_${PROJECT_NAME})
 
 ament_package()
